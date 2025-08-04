@@ -28,7 +28,6 @@ LEGALSENSE/
 │   └── falcon-rw-1b/               # Language generation model
 ├── chunks_and_embeddings.csv       # Preprocessed legal database
 ├── Pakistan Penal Code.pdf         # Source legal document
-├── requirements.txt                # Python dependencies
 └── README.md                       # Project documentation
 ```
 
