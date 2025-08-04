@@ -1,5 +1,10 @@
-import nest_asyncio
-nest_asyncio.apply()
+# Fix for Streamlit event loop error
+import sys
+import asyncio
+
+if sys.platform == "win32":
+    if sys.version_info >= (3, 8):
+        asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 import os
 os.environ["STREAMLIT_SERVER_ENABLE_FILE_WATCHER"] = "false"
@@ -35,7 +40,7 @@ def load_models():
 @st.cache_data
 def load_data():
     try:
-        df = pd.read_csv("data/chunks_and_embeddings.csv")
+        df = pd.read_csv("U:\\LEGALSENSE\\chunks_and_embeddings.csv")
         st.success("Knowledge base loaded successfully")
         return df
     except Exception as e:
