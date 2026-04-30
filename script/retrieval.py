@@ -20,13 +20,14 @@ def parse_embedding_string(embed_str):
     
     return np.array([float(part) for part in parts if part], dtype=np.float32)
 
-def find_relevant_chunks(query_embedding, df, top_k=3):
+def find_relevant_chunks(query_embedding, df, chunk_embeds=None, top_k=5):
     """Find top relevant legal provisions"""
     
-    embeddings_list = [parse_embedding_string(x) for x in df['embedding']]
-    chunk_embeds = np.stack(embeddings_list)
+    if chunk_embeds is None:
+        embeddings_list = [parse_embedding_string(x) for x in df['embedding']]
+        chunk_embeds = np.stack(embeddings_list)
     
-    
+    # Calculate norms
     norms = np.linalg.norm(chunk_embeds, axis=1)
     norm_query = np.linalg.norm(query_embedding)
     similarities = np.dot(chunk_embeds, query_embedding) / (norms * norm_query + 1e-8)

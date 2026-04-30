@@ -37,15 +37,22 @@ def load_models():
     return embed_model, falcon_tokenizer, falcon_model
 
 
-@st.cache_data
+@st.cache_resource
 def load_data():
     try:
-        df = pd.read_csv("U:\\LEGALSENSE\\chunks_and_embeddings.csv")
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        csv_path = os.path.join(current_dir, "chunks_and_embeddings.csv")
+        df = pd.read_csv(csv_path)
+        
+        from script.retrieval import parse_embedding_string
+        embeddings_list = [parse_embedding_string(x) for x in df['embedding']]
+        chunk_embeds = np.stack(embeddings_list)
+        
         st.success("Knowledge base loaded successfully")
-        return df
+        return df, chunk_embeds
     except Exception as e:
         st.error(f"Error loading knowledge base: {str(e)}")
-        return pd.DataFrame()
+        return pd.DataFrame(), None
 
 def main():
     st.set_page_config(page_title="Pakistan Legal Assistant", layout="wide")
@@ -61,7 +68,7 @@ def main():
         embed_model, falcon_tokenizer, falcon_model = load_models()
     
     with st.spinner("Loading legal database..."):
-        df = load_data()
+        df, chunk_embeds = load_data()
     
     
     query = st.chat_input("Ask your legal question about Pakistan Penal Code...")
@@ -77,7 +84,7 @@ def main():
                 query_embedding = generate_embeddings(query, embed_model)
                 
                 
-                relevant_chunks = find_relevant_chunks(query_embedding, df)
+                relevant_chunks = find_relevant_chunks(query_embedding, df, chunk_embeds)
                 context = "\n\n".join([
                     f"Page {row['page_number']}: {row['sentence_chunk']}" 
                     for _, row in relevant_chunks.iterrows()

@@ -63,14 +63,12 @@ def generate_answer(prompt, tokenizer, model):
             repetition_penalty=1.1  
         )
     
-    full_response = tokenizer.decode(outputs[0], skip_special_tokens=True)
+    input_length = inputs.input_ids.shape[1]
+    new_tokens = outputs[0][input_length:]
+    response = tokenizer.decode(new_tokens, skip_special_tokens=True).strip()
     
-    
-    if "<|assistant|>" in full_response:
-        return full_response.split("<|assistant|>")[-1].strip()
-    
-    
-    if prompt in full_response:
-        return full_response.replace(prompt, "").strip()
-    
-    return full_response
+    # Fallback if empty
+    if not response:
+        return "I apologize, but I was unable to generate a clear answer from the legal context."
+        
+    return response
